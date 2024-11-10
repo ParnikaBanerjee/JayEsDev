@@ -1,0 +1,167 @@
+<html>
+<head>
+<link rel='stylesheet' href='https://app.scribbler.live/codemirror/codemirror.css'>
+<link rel='stylesheet' href='https://app.scribbler.live/codemirror/cobalt.css'>
+<link rel='stylesheet' href='https://app.scribbler.live/codemirror/duotone-light.css'>
+<link rel='stylesheet' href='https://app.scribbler.live/codemirror/show-hint.css'>
+<link rel='stylesheet' href='https://app.scribbler.live/css/pico.min.css'>
+<link rel='stylesheet' href='https://app.scribbler.live/css/style.css'>
+<title>New JSNB:Scribbler Notebook</title>
+</head>
+<body>
+<br>
+<div class="container">
+
+<script>
+// Set up the body styles
+document.body.style.display = 'flex';
+document.body.style.justifyContent = 'center';
+document.body.style.alignItems = 'center';
+document.body.style.height = '100vh';
+document.body.style.margin = '0';
+document.body.style.backgroundColor = '#000';
+
+// Create the canvas element
+const canvas = document.createElement('canvas');
+canvas.width = 600;
+canvas.height = 400;
+canvas.style.border = '2px solid #333';
+canvas.style.backgroundColor = '#000';
+canvas.style.cursor = 'crosshair';
+document.body.appendChild(canvas);
+
+// Canvas context for drawing
+const ctx = canvas.getContext('2d');
+
+// Game variables
+const pacman = {
+    x: 300,
+    y: 200,
+    size: 20,
+    speed: 3,
+    dx: 0,
+    dy: 0,
+    mouthAngle: 0.2, // Controls the open mouth animation
+    mouthDirection: 1
+};
+
+const ghosts = [
+    { x: 100, y: 100, size: 20, color: 'red', speed: 2 },
+    { x: 500, y: 300, size: 20, color: 'cyan', speed: 2 }
+];
+
+// Key events to control Pac-Man movement
+document.addEventListener('keydown', movePacman);
+document.addEventListener('keyup', stopPacman);
+
+function movePacman(e) {
+    if (e.key === 'ArrowRight') {
+        pacman.dx = pacman.speed;
+        pacman.dy = 0;
+    } else if (e.key === 'ArrowLeft') {
+        pacman.dx = -pacman.speed;
+        pacman.dy = 0;
+    } else if (e.key === 'ArrowUp') {
+        pacman.dx = 0;
+        pacman.dy = -pacman.speed;
+    } else if (e.key === 'ArrowDown') {
+        pacman.dx = 0;
+        pacman.dy = pacman.speed;
+    }
+}
+
+function stopPacman(e) {
+    if (['ArrowRight', 'ArrowLeft', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
+        pacman.dx = 0;
+        pacman.dy = 0;
+    }
+}
+
+function drawPacman() {
+    // Pac-Man mouth animation
+    pacman.mouthDirection *= (pacman.mouthAngle >= 0.35 || pacman.mouthAngle <= 0.2) ? -1 : 1;
+    pacman.mouthAngle += 0.01 * pacman.mouthDirection;
+
+    // Draw Pac-Man
+    ctx.beginPath();
+    ctx.arc(pacman.x, pacman.y, pacman.size, 
+            pacman.mouthAngle * Math.PI, (2 - pacman.mouthAngle) * Math.PI, false);
+    ctx.lineTo(pacman.x, pacman.y);
+    ctx.fillStyle = 'yellow';
+    ctx.fill();
+    ctx.closePath();
+}
+
+function updatePacman() {
+    // Move Pac-Man
+    pacman.x += pacman.dx;
+    pacman.y += pacman.dy;
+
+    // Boundary collision detection
+    if (pacman.x - pacman.size < 0) {
+        pacman.x = pacman.size;
+    } else if (pacman.x + pacman.size > canvas.width) {
+        pacman.x = canvas.width - pacman.size;
+    }
+
+    if (pacman.y - pacman.size < 0) {
+        pacman.y = pacman.size;
+    } else if (pacman.y + pacman.size > canvas.height) {
+        pacman.y = canvas.height - pacman.size;
+    }
+}
+
+function drawGhost(ghost) {
+    ctx.beginPath();
+    ctx.arc(ghost.x, ghost.y, ghost.size, 0, Math.PI * 2);
+    ctx.fillStyle = ghost.color;
+    ctx.fill();
+    ctx.closePath();
+}
+
+function updateGhosts() {
+    ghosts.forEach(ghost => {
+        const direction = Math.random() < 0.5 ? 1 : -1;
+        if (Math.random() < 0.5) {
+            ghost.x += ghost.speed * direction;
+        } else {
+            ghost.y += ghost.speed * direction;
+        }
+
+        // Boundary collision detection for ghosts
+        if (ghost.x - ghost.size < 0) {
+            ghost.x = ghost.size;
+        } else if (ghost.x + ghost.size > canvas.width) {
+            ghost.x = canvas.width - ghost.size;
+        }
+
+        if (ghost.y - ghost.size < 0) {
+            ghost.y = ghost.size;
+        } else if (ghost.y + ghost.size > canvas.height) {
+            ghost.y = canvas.height - ghost.size;
+        }
+    });
+}
+
+function clearCanvas() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+function gameLoop() {
+    clearCanvas();
+    drawPacman();
+    drawGhosts();
+    updatePacman();
+    updateGhosts();
+    requestAnimationFrame(gameLoop);
+}
+
+function drawGhosts() {
+    ghosts.forEach(drawGhost);
+}
+
+// Start the game
+gameLoop();
+</script>
+
+<article ondblclick="sandbox.toggleEditor(0)" style="display:flex" id="result0"><p class="status" id="status0" style="display: inline;">[1]<br><span style="font-size:8px">0ms<span></span></span></p> <div class="output" id="output0" style="display: inline;"></div></article></div></body></html>
