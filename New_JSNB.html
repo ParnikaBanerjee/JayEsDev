@@ -13,155 +13,1260 @@
 <div class="container">
 
 <script>
-// Set up the body styles
-document.body.style.display = 'flex';
-document.body.style.justifyContent = 'center';
-document.body.style.alignItems = 'center';
-document.body.style.height = '100vh';
-document.body.style.margin = '0';
-document.body.style.backgroundColor = '#000';
-
-// Create the canvas element
-const canvas = document.createElement('canvas');
-canvas.width = 600;
-canvas.height = 400;
-canvas.style.border = '2px solid #333';
-canvas.style.backgroundColor = '#000';
-canvas.style.cursor = 'crosshair';
-document.body.appendChild(canvas);
-
-// Canvas context for drawing
-const ctx = canvas.getContext('2d');
-
-// Game variables
-const pacman = {
-    x: 300,
-    y: 200,
-    size: 20,
-    speed: 3,
-    dx: 0,
-    dy: 0,
-    mouthAngle: 0.2, // Controls the open mouth animation
-    mouthDirection: 1
+    const styles = {
+  "@font-face": {
+    fontFamily: "PressStart2P",
+    src: "url('./fonts/PressStart2P.ttf')",
+  },
+  "*": {
+    margin: 0,
+    padding: 0,
+  },
+  body: {
+    fontFamily: "'PressStart2P', sans-serif",
+    backgroundColor: "#000",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundImage: "url('./images/space-background.jpg')",
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    color: "#fff",
+  },
+  ".game-container": {
+    width: "100%",
+    height: "100vh",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "space-evenly",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.8)",
+    padding: "20px",
+    borderRadius: "15px",
+    boxShadow: "0px 0px 15px rgba(255, 255, 255, 0.3)",
+  },
+  ".grid": {
+    display: "flex",
+    flexWrap: "wrap",
+    width: "560px",
+    height: "560px",
+    border: "0.2px solid #888",
+    borderRadius: "10px",
+    background: "rgba(0, 0, 0, 0.6)",
+  },
+  ".grid div": {
+    width: "20px",
+    height: "20px",
+  },
+  ".power-pellet": {
+    backgroundColor: "green",
+    border: "solid blue 4px",
+    boxSizing: "border-box",
+    borderRadius: "10px",
+  },
+  ".pac-dot": {
+    backgroundColor: "#ffeb3b",
+    border: "solid #ff9800 7px",
+    boxSizing: "border-box",
+    borderRadius: "10px",
+  },
+  ".blinky": {
+    backgroundColor: "#ff3b30",
+  },
+  ".stinky": {
+    backgroundColor: "#ff2d55",
+  },
+  ".inky": {
+    backgroundColor: "#5ac8fa",
+  },
+  ".clyde": {
+    backgroundColor: "#ffcc00",
+  },
+  ".ghost": {
+    border: "0px",
+    borderRadius: "0px",
+  },
+  ".scared-ghost": {
+    backgroundColor: "#5856d6",
+    border: "0px",
+    borderRadius: "0px",
+  },
+  ".wall": {
+    backgroundColor: "#001f3f",
+  },
+  ".pac-man": {
+    backgroundColor: "#ffeb3b",
+    borderRadius: "10px",
+  },
+  h2: {
+    color: "#fff",
+    fontWeight: "normal",
+    textAlign: "center",
+  },
+  ".low-score": {
+    color: "#ff3b30",
+  },
+  ".mid-score": {
+    color: "#ffcc00",
+  },
+  ".high-score": {
+    color: "#5ac8fa",
+  },
+  "#start-screen": {
+    backgroundColor: "rgba(0, 0, 0, 0.9)",
+    color: "#ffffff",
+    flexDirection: "column",
+    alignItems: "center",
+    borderRadius: "15px",
+    padding: "20px",
+    boxShadow: "0px 0px 15px rgba(255, 255, 255, 0.3)",
+  },
+  "#start-screen h1": {
+    color: "#ffcc00",
+    fontSize: "4rem",
+    marginTop: "40vh",
+    marginBottom: "40px",
+    animation: "colours 1s infinite",
+  },
+  "#start-msg": {
+    animation: "blink 0.8s infinite",
+  },
+  "#start-screen h2": {
+    margin: "20px 0px",
+  },
+  "#game-over-screen": {
+    alignItems: "center",
+    color: "#ff3b30",
+    fontSize: "6rem",
+    justifyContent: "center",
+    animation: "blink 0.8s infinite",
+    display: "none",
+  },
+  "#you-won-screen": {
+    alignItems: "center",
+    color: "#0bf117",
+    fontSize: "6rem",
+    justifyContent: "center",
+    animation: "blink 0.8s infinite",
+    display: "none",
+  },
+  ".overlay-screen": {
+    position: "fixed",
+    width: "100%",
+    height: "100vh",
+    display: "flex",
+  },
+  "@keyframes colours": {
+    "0%": { color: "#ffcc00" },
+    "31%": { color: "#ffcc00" },
+    "33%": { color: "#ff2d55" },
+    "65%": { color: "#ff2d55" },
+    "66%": { color: "#5ac8fa" },
+    "99%": { color: "#5ac8fa" },
+  },
+  "@keyframes blink": {
+    "0%": { opacity: 1 },
+    "60%": { opacity: 1 },
+    "61%": { opacity: 0 },
+    "99%": { opacity: 0 },
+  },
 };
 
-const ghosts = [
-    { x: 100, y: 100, size: 20, color: 'red', speed: 2 },
-    { x: 500, y: 300, size: 20, color: 'cyan', speed: 2 }
-];
-
-// Key events to control Pac-Man movement
-document.addEventListener('keydown', movePacman);
-document.addEventListener('keyup', stopPacman);
-
-function movePacman(e) {
-    if (e.key === 'ArrowRight') {
-        pacman.dx = pacman.speed;
-        pacman.dy = 0;
-    } else if (e.key === 'ArrowLeft') {
-        pacman.dx = -pacman.speed;
-        pacman.dy = 0;
-    } else if (e.key === 'ArrowUp') {
-        pacman.dx = 0;
-        pacman.dy = -pacman.speed;
-    } else if (e.key === 'ArrowDown') {
-        pacman.dx = 0;
-        pacman.dy = pacman.speed;
-    }
-}
-
-function stopPacman(e) {
-    if (['ArrowRight', 'ArrowLeft', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
-        pacman.dx = 0;
-        pacman.dy = 0;
-    }
-}
-
-function drawPacman() {
-    // Pac-Man mouth animation
-    pacman.mouthDirection *= (pacman.mouthAngle >= 0.35 || pacman.mouthAngle <= 0.2) ? -1 : 1;
-    pacman.mouthAngle += 0.01 * pacman.mouthDirection;
-
-    // Draw Pac-Man
-    ctx.beginPath();
-    ctx.arc(pacman.x, pacman.y, pacman.size, 
-            pacman.mouthAngle * Math.PI, (2 - pacman.mouthAngle) * Math.PI, false);
-    ctx.lineTo(pacman.x, pacman.y);
-    ctx.fillStyle = 'yellow';
-    ctx.fill();
-    ctx.closePath();
-}
-
-function updatePacman() {
-    // Move Pac-Man
-    pacman.x += pacman.dx;
-    pacman.y += pacman.dy;
-
-    // Boundary collision detection
-    if (pacman.x - pacman.size < 0) {
-        pacman.x = pacman.size;
-    } else if (pacman.x + pacman.size > canvas.width) {
-        pacman.x = canvas.width - pacman.size;
-    }
-
-    if (pacman.y - pacman.size < 0) {
-        pacman.y = pacman.size;
-    } else if (pacman.y + pacman.size > canvas.height) {
-        pacman.y = canvas.height - pacman.size;
-    }
-}
-
-function drawGhost(ghost) {
-    ctx.beginPath();
-    ctx.arc(ghost.x, ghost.y, ghost.size, 0, Math.PI * 2);
-    ctx.fillStyle = ghost.color;
-    ctx.fill();
-    ctx.closePath();
-}
-
-function updateGhosts() {
-    ghosts.forEach(ghost => {
-        const direction = Math.random() < 0.5 ? 1 : -1;
-        if (Math.random() < 0.5) {
-            ghost.x += ghost.speed * direction;
-        } else {
-            ghost.y += ghost.speed * direction;
+document.addEventListener("DOMContentLoaded", () => {
+    const scoreDisplay = document.getElementById("score");
+    const width = 28;
+    let score = 0;
+    const grid = document.querySelector(".grid");
+    const layout = [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      0,
+      1,
+      1,
+      1,
+      1,
+      0,
+      1,
+      1,
+      1,
+      1,
+      1,
+      0,
+      1,
+      1,
+      0,
+      1,
+      1,
+      1,
+      1,
+      1,
+      0,
+      1,
+      1,
+      1,
+      1,
+      0,
+      1,
+      1,
+      3,
+      1,
+      1,
+      1,
+      1,
+      0,
+      1,
+      1,
+      1,
+      1,
+      1,
+      0,
+      1,
+      1,
+      0,
+      1,
+      1,
+      1,
+      1,
+      1,
+      0,
+      1,
+      1,
+      1,
+      1,
+      3,
+      1,
+      1,
+      0,
+      1,
+      1,
+      1,
+      1,
+      0,
+      1,
+      1,
+      1,
+      1,
+      1,
+      0,
+      1,
+      1,
+      0,
+      1,
+      1,
+      1,
+      1,
+      1,
+      0,
+      1,
+      1,
+      1,
+      1,
+      0,
+      1,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      0,
+      1,
+      1,
+      1,
+      1,
+      0,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      0,
+      1,
+      1,
+      1,
+      1,
+      0,
+      1,
+      1,
+      0,
+      1,
+      1,
+      1,
+      1,
+      0,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      0,
+      1,
+      1,
+      1,
+      1,
+      0,
+      1,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      0,
+      1,
+      1,
+      1,
+      1,
+      1,
+      0,
+      1,
+      1,
+      0,
+      1,
+      1,
+      1,
+      1,
+      1,
+      0,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      0,
+      1,
+      1,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      1,
+      1,
+      0,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      0,
+      1,
+      1,
+      4,
+      1,
+      1,
+      1,
+      2,
+      2,
+      1,
+      1,
+      1,
+      4,
+      1,
+      1,
+      0,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      0,
+      1,
+      1,
+      4,
+      1,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      1,
+      4,
+      1,
+      1,
+      0,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      0,
+      0,
+      0,
+      4,
+      1,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      1,
+      4,
+      0,
+      0,
+      0,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      0,
+      1,
+      1,
+      4,
+      1,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      1,
+      4,
+      1,
+      1,
+      0,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      0,
+      1,
+      1,
+      4,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      4,
+      1,
+      1,
+      0,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      0,
+      1,
+      1,
+      4,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      4,
+      1,
+      1,
+      0,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      0,
+      1,
+      1,
+      1,
+      1,
+      0,
+      1,
+      1,
+      1,
+      1,
+      1,
+      0,
+      1,
+      1,
+      0,
+      1,
+      1,
+      1,
+      1,
+      1,
+      0,
+      1,
+      1,
+      1,
+      1,
+      0,
+      1,
+      1,
+      0,
+      1,
+      1,
+      1,
+      1,
+      0,
+      1,
+      1,
+      1,
+      1,
+      1,
+      0,
+      1,
+      1,
+      0,
+      1,
+      1,
+      1,
+      1,
+      1,
+      0,
+      1,
+      1,
+      1,
+      1,
+      0,
+      1,
+      1,
+      3,
+      0,
+      0,
+      1,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      0,
+      0,
+      3,
+      1,
+      1,
+      1,
+      1,
+      0,
+      1,
+      1,
+      0,
+      1,
+      1,
+      0,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      0,
+      1,
+      1,
+      0,
+      1,
+      1,
+      0,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      0,
+      1,
+      1,
+      0,
+      1,
+      1,
+      0,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      0,
+      1,
+      1,
+      0,
+      1,
+      1,
+      0,
+      1,
+      1,
+      1,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      0,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      0,
+      1,
+      1,
+      0,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      0,
+      1,
+      1,
+      0,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      0,
+      1,
+      1,
+      0,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      0,
+      1,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+    ];
+    // 0 - pac-dots
+    // 1 - wall
+    // 2 - ghost-lair
+    // 3 - power-pellet
+    // 4 - empty
+  
+    const squares = [];
+  
+    //create your board
+    function createBoard() {
+      for (let i = 0; i < layout.length; i++) {
+        const square = document.createElement("div");
+        grid.appendChild(square);
+        squares.push(square);
+  
+        //add layout to the board
+        if (layout[i] === 0) {
+          squares[i].classList.add("pac-dot");
+        } else if (layout[i] === 1) {
+          squares[i].classList.add("wall");
+        } else if (layout[i] === 2) {
+          squares[i].classList.add("ghost-lair");
+        } else if (layout[i] === 3) {
+          squares[i].classList.add("power-pellet");
         }
-
-        // Boundary collision detection for ghosts
-        if (ghost.x - ghost.size < 0) {
-            ghost.x = ghost.size;
-        } else if (ghost.x + ghost.size > canvas.width) {
-            ghost.x = canvas.width - ghost.size;
+      }
+    }
+    createBoard();
+  
+    //create Characters
+    //draw pacman onto the board
+    let pacmanCurrentIndex = 490;
+    let pacmanVelocity = {
+      x: 0,
+      y: 0,
+    };
+    const pacmanSpeed = 200;
+    squares[pacmanCurrentIndex].classList.add("pac-man");
+    //get the coordinates of pacman on the grid with X and Y axis
+    // function getCoordinates(index) {
+    //   return [index % width, Math.floor(index / width)]
+    // }
+  
+    // console.log(getCoordinates(pacmanCurrentIndex))
+  
+    // set pacman velocity
+    function setPacmanVelocity(e) {
+      switch (e.keyCode) {
+        case 37:
+          if (
+            pacmanCurrentIndex % width !== 0 &&
+            !squares[pacmanCurrentIndex - 1].classList.contains("wall") &&
+            !squares[pacmanCurrentIndex - 1].classList.contains("ghost-lair")
+          ) {
+            pacmanVelocity.y = 0;
+            pacmanVelocity.x = 1;
+          }
+          break;
+        case 38:
+          if (
+            pacmanCurrentIndex - width >= 0 &&
+            !squares[pacmanCurrentIndex - width].classList.contains("wall") &&
+            !squares[pacmanCurrentIndex - width].classList.contains("ghost-lair")
+          ) {
+            pacmanVelocity.y = 0;
+            pacmanVelocity.x = -1;
+          }
+          break;
+        case 39:
+          if (
+            pacmanCurrentIndex % width < width - 1 &&
+            !squares[pacmanCurrentIndex + 1].classList.contains("wall") &&
+            !squares[pacmanCurrentIndex + 1].classList.contains("ghost-lair")
+          ) {
+            pacmanVelocity.y = 1;
+            pacmanVelocity.x = 0;
+          }
+          break;
+        case 40:
+          if (
+            pacmanCurrentIndex + width < width * width &&
+            !squares[pacmanCurrentIndex + width].classList.contains("wall") &&
+            !squares[pacmanCurrentIndex + width].classList.contains("ghost-lair")
+          ) {
+            pacmanVelocity.y = -1;
+            pacmanVelocity.x = 0;
+          }
+          break;
+      }
+      checkForGameOver();
+      console.log(pacmanVelocity, e.keyCode);
+    }
+  
+    //move pacman
+    function movePacman() {
+      squares[pacmanCurrentIndex].classList.remove("pac-man");
+      setInterval(() => {
+        if (pacmanVelocity.x === 1 && pacmanVelocity.y == 0) {
+          if (
+            pacmanCurrentIndex % width !== 0 &&
+            !squares[pacmanCurrentIndex - 1].classList.contains("wall") &&
+            !squares[pacmanCurrentIndex - 1].classList.contains("ghost-lair")
+          ) {
+            squares[pacmanCurrentIndex].classList.remove("pac-man");
+  
+            pacmanCurrentIndex -= 1;
+          }
+          if (squares[pacmanCurrentIndex - 1] === squares[363]) {
+            pacmanCurrentIndex = 391;
+          }
         }
-
-        if (ghost.y - ghost.size < 0) {
-            ghost.y = ghost.size;
-        } else if (ghost.y + ghost.size > canvas.height) {
-            ghost.y = canvas.height - ghost.size;
+        if (pacmanVelocity.x === -1 && pacmanVelocity.y == 0) {
+          if (
+            pacmanCurrentIndex - width >= 0 &&
+            !squares[pacmanCurrentIndex - width].classList.contains("wall") &&
+            !squares[pacmanCurrentIndex - width].classList.contains("ghost-lair")
+          ) {
+            squares[pacmanCurrentIndex].classList.remove("pac-man");
+  
+            pacmanCurrentIndex -= width;
+          }
         }
+        if (pacmanVelocity.x === 0 && pacmanVelocity.y == 1) {
+          if (
+            pacmanCurrentIndex % width < width - 1 &&
+            !squares[pacmanCurrentIndex + 1].classList.contains("wall") &&
+            !squares[pacmanCurrentIndex + 1].classList.contains("ghost-lair")
+          ) {
+            squares[pacmanCurrentIndex].classList.remove("pac-man");
+  
+            pacmanCurrentIndex += 1;
+          }
+          if (squares[pacmanCurrentIndex + 1] === squares[392]) {
+            pacmanCurrentIndex = 364;
+          }
+        }
+        if (pacmanVelocity.x === 0 && pacmanVelocity.y == -1) {
+          if (
+            pacmanCurrentIndex + width < width * width &&
+            !squares[pacmanCurrentIndex + width].classList.contains("wall") &&
+            !squares[pacmanCurrentIndex + width].classList.contains("ghost-lair")
+          ) {
+            squares[pacmanCurrentIndex].classList.remove("pac-man");
+            pacmanCurrentIndex += width;
+          }
+        }
+  
+        squares[pacmanCurrentIndex].classList.add("pac-man");
+        pacDotEaten();
+        powerPelletEaten();
+      }, pacmanSpeed);
+    }
+  
+    // what happens when you eat a pac-dot
+    function pacDotEaten() {
+      if (squares[pacmanCurrentIndex].classList.contains("pac-dot")) {
+        score++;
+        if (score < 50) {
+          document.getElementById("score").classList.add("low-score");
+        } else if (score > 100) {
+          document.getElementById("score").classList.add("mid-score");
+        } else if (score > 200) {
+          document.getElementById("score").classList.add("high-score");
+        }
+        scoreDisplay.innerHTML = score;
+        squares[pacmanCurrentIndex].classList.remove("pac-dot");
+        checkForWin();
+      }
+    }
+  
+    //what happens when you eat a power-pellet
+    function powerPelletEaten() {
+      if (squares[pacmanCurrentIndex].classList.contains("power-pellet")) {
+        score += 10;
+        ghosts.forEach((ghost) => (ghost.isScared = true));
+        setTimeout(unScareGhosts, 10000);
+        squares[pacmanCurrentIndex].classList.remove("power-pellet");
+        checkForWin();
+      }
+    }
+  
+    //make the ghosts stop flashing
+    function unScareGhosts() {
+      ghosts.forEach((ghost) => (ghost.isScared = false));
+    }
+  
+    //create ghosts using Constructors
+    class Ghost {
+      constructor(className, startIndex, speed) {
+        this.className = className;
+        this.startIndex = startIndex;
+        this.speed = speed;
+        this.currentIndex = startIndex;
+        this.isScared = false;
+        this.timerId = NaN;
+      }
+    }
+  
+    //all my ghosts
+    ghosts = [
+      new Ghost("blinky", 348, 100),
+      new Ghost("stinky", 376, 400),
+      new Ghost("inky", 351, 300),
+      new Ghost("clyde", 379, 200),
+    ];
+  
+    //draw my ghosts onto the grid
+    ghosts.forEach((ghost) => {
+      squares[ghost.currentIndex].classList.add(ghost.className);
+      squares[ghost.currentIndex].classList.add("ghost");
     });
-}
-
-function clearCanvas() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-}
-
-function gameLoop() {
-    clearCanvas();
-    drawPacman();
-    drawGhosts();
-    updatePacman();
-    updateGhosts();
-    requestAnimationFrame(gameLoop);
-}
-
-function drawGhosts() {
-    ghosts.forEach(drawGhost);
-}
-
-// Start the game
-gameLoop();
+  
+    function moveGhost(ghost) {
+      const directions = [-1, +1, width, -width];
+      let direction = directions[Math.floor(Math.random() * directions.length)];
+  
+      ghost.timerId = setInterval(function () {
+        //if the next square your ghost is going to go to does not have a ghost and does not have a wall
+        if (
+          !squares[ghost.currentIndex + direction].classList.contains("ghost") &&
+          !squares[ghost.currentIndex + direction].classList.contains("wall")
+        ) {
+          //remove the ghosts classes
+          squares[ghost.currentIndex].classList.remove(ghost.className);
+          squares[ghost.currentIndex].classList.remove("ghost", "scared-ghost");
+          //move into that space
+          ghost.currentIndex += direction;
+          squares[ghost.currentIndex].classList.add(ghost.className, "ghost");
+          //else find a new random direction to go in
+        } else direction = directions[Math.floor(Math.random() * directions.length)];
+  
+        //if the ghost is currently scared
+        if (ghost.isScared) {
+          squares[ghost.currentIndex].classList.add("scared-ghost");
+        }
+  
+        //if the ghost is currently scared and pacman is on it
+        if (
+          ghost.isScared &&
+          squares[ghost.currentIndex].classList.contains("pac-man")
+        ) {
+          squares[ghost.currentIndex].classList.remove(
+            ghost.className,
+            "ghost",
+            "scared-ghost"
+          );
+          ghost.currentIndex = ghost.startIndex;
+          score += 100;
+          squares[ghost.currentIndex].classList.add(ghost.className, "ghost");
+        }
+        checkForGameOver();
+      }, ghost.speed);
+    }
+  
+    //check for a game over
+    function checkForGameOver() {
+      if (
+        squares[pacmanCurrentIndex].classList.contains("ghost") &&
+        !squares[pacmanCurrentIndex].classList.contains("scared-ghost")
+      ) {
+        ghosts.forEach((ghost) => clearInterval(ghost.timerId));
+        document.removeEventListener("keyup", movePacman);
+        pacmanVelocity.x = 0;
+        pacmanVelocity.y = 0;
+        //display game over screen and refresh after 3s to rest game
+        document.getElementById("game-over-screen").style.display = "flex";
+        setTimeout(function () {
+          window.location.reload();
+        }, 3000);
+      }
+    }
+  
+    //check for a win - more is when this score is reached
+    function checkForWin() {
+      if (score === 274) {
+        ghosts.forEach((ghost) => clearInterval(ghost.timerId));
+        document.removeEventListener("keyup", movePacman);
+        pacmanVelocity.x = 0;
+        pacmanVelocity.y = 0;
+        //display you won screen and refresh after 3s to rest game
+        document.getElementById("you-won-screen").style.display = "flex";
+        setTimeout(function () {
+          window.location.reload();
+        }, 3000);
+      }
+    }
+  
+    //start the game when enter is pressed
+    function startGame(event) {
+      if (event.keyCode === 13) {
+        document.removeEventListener("keydown", startGame);
+        //remove start screen
+        document.getElementById("start-screen").style.display = "none";
+        //set pacman velocity and enable movement
+        document.addEventListener("keyup", setPacmanVelocity);
+        movePacman();
+        // move the Ghosts randomly
+        ghosts.forEach((ghost) => moveGhost(ghost));
+      }
+    }
+  
+    document.addEventListener("keydown", startGame);
+  });
 </script>
 
 <article ondblclick="sandbox.toggleEditor(0)" style="display:flex" id="result0"><p class="status" id="status0" style="display: inline;">[1]<br><span style="font-size:8px">0ms<span></span></span></p> <div class="output" id="output0" style="display: inline;"></div></article></div></body></html>
